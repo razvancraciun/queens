@@ -2,21 +2,20 @@ from copy import deepcopy
 from tabulate import tabulate
 from termcolor import colored
 
-BOARD_SIZE = 4
+BOARD_SIZE = 8
 
 def backtracking():
-    states = [ [] ]
+    states = [[]]
     while states:
-        current = states.pop()
-        if final_state(current):
-            return current
-        for succ in succesor(current):
-            if not attacking(succ):
+        state = states.pop()
+        if is_final(state):
+            return state
+        for succ in succesors(state):
+            if is_valid(succ):
                 states.append(succ)
 
-
-''' Returns a list of all possible states where we add a queen on the next row'''
-def succesor(state):
+''' Returns a list of all possible states where we add a queen on the next row '''
+def succesors(state):
     result = []
     for i in reversed(range(BOARD_SIZE)):
         succ = deepcopy(state)
@@ -24,26 +23,35 @@ def succesor(state):
         result.append(succ)
     return result
 
+''' Returns True if no queens are attacking each other, False otherwise '''
+def is_valid(state):
+    # horizontal check is implied by the way the state is stored
 
-''' Returns True if any two queens are attacking eachother, False otherwise'''
-def attacking(state):
-    # vertical is implied by the way we code a state
-
-    # horizontal
+    # vertical check
     for i in range(len(state)):
-        for j in range(len(state)):
-            if i != j and state[i] == state[j]:
-                return True
+        for j in range(i + 1, len(state)):
+            if state[i] == state[j]:
+                return False
 
-    # TODO diagonal
-    return False
+    # diagonal check
+    # ╲╱ check
+    for i in range(len(state)):
+        for j in range(i - 1, -1, -1):
+            if state[j] in {state[i] - j + i, state[i] + j - i}:
+                return False
+    # ╱╲ check
+    for i in range(len(state)):
+        for j in range(i + 1, len(state)):
+            if state[j] in {state[i] - j + i, state[i] + j - i}:
+                return False
+
+    return True
     
-''' If each column has a queen is full '''
-def final_state(state):
+''' Returns True if each row has a queen, False otherwise '''
+def is_final(state):
     if len(state) == BOARD_SIZE:
         return True
     return False
-
 
 def display(state):
     result = []
