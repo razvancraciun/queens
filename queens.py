@@ -1,6 +1,8 @@
 from copy import deepcopy
+from tabulate import tabulate
+from termcolor import colored
 
-BOARD_SIZE = 25
+BOARD_SIZE = 4
 
 def backtracking():
     states = [ [] ]
@@ -44,5 +46,13 @@ def final_state(state):
 
 
 def display(state):
-    # pretty print the state
-    pass
+    result = []
+    for i in range(BOARD_SIZE):
+        result.append([])
+        for j in range(BOARD_SIZE):
+            result[i].append('')
+    
+    for i in range(len(state)):
+        result[i][state[i]] = colored('⬤', 'white')
+
+    print(tabulate(result, headers=range(BOARD_SIZE), showindex='always', tablefmt='fancy_grid'))

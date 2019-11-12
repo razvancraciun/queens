@@ -2,7 +2,7 @@ import queens as q
 
 
 def main():
-    print(q.backtracking())
+    q.display(q.backtracking())
 
 
 if __name__ == '__main__':
