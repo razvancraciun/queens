@@ -20,6 +20,7 @@ def rm(item, iterable):
         iterable.remove(item)
 
 ''' Backtracking with forward checking '''
+# TODO this function contains too many functions. consider making a module for this
 def backtracking():
     def bkt(state, domains, level):
         if is_final(state):
@@ -32,24 +33,25 @@ def backtracking():
 
             if is_valid(new_state):
                 constrained_domains = deepcopy(domains)
-
-                # vertical check
-                for i in range(level, BOARD_SIZE):
-                    rm(new_state[level], constrained_domains[i])
-                constrained_domains[level] = new_state[level]
-
-                # diagonal check
-                for i, lvl in enumerate(range(level + 1, BOARD_SIZE), start=1):
-                    if 0 <= new_state[level] - i:
-                        rm(new_state[level] - i, constrained_domains[lvl])
-                    if new_state[level] + i < BOARD_SIZE:
-                        rm(new_state[level] + i, constrained_domains[lvl])
-                
+                constrain_vertical(level, new_state, constrained_domains)
+                constrain_diagonal(level, new_state, constrained_domains)
                 rez = bkt(new_state, constrained_domains, level + 1)
 
                 if rez != False:
                     return rez
         return False
+
+    def constrain_diagonal(level, new_state, constrained_domains):
+        for i, lvl in enumerate(range(level + 1, BOARD_SIZE), start=1):
+            if 0 <= new_state[level] - i:
+                rm(new_state[level] - i, constrained_domains[lvl])
+            if new_state[level] + i < BOARD_SIZE:
+                rm(new_state[level] + i, constrained_domains[lvl])
+
+    def constrain_vertical(level, new_state, constrained_domains):
+        for i in range(level, BOARD_SIZE):
+            rm(new_state[level], constrained_domains[i])
+        constrained_domains[level] = new_state[level]
 
     domains = []
     for i in range(BOARD_SIZE):
