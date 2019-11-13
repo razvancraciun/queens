@@ -4,7 +4,7 @@ from termcolor import colored
 
 BOARD_SIZE = 8
 
-def backtracking():
+def backtracking2():
     states = [[]]
     while states:
         state = states.pop()
@@ -13,6 +13,47 @@ def backtracking():
         for succ in succesors(state):
             if is_valid(succ):
                 states.append(succ)
+
+''' Removes items without failure'''
+def rm(item, iterable):
+    if item in iterable:
+        iterable.remove(item)
+
+def backtracking():
+    def bkt(state, domains, level):
+        if is_final(state):
+            return state
+
+        # check among the remaining possible values
+        for succ in domains[level]:
+            new_state = deepcopy(state)
+            new_state.append(succ)
+
+            if is_valid(new_state):
+                constrained_domains = deepcopy(domains)
+
+                # vertical check
+                for i in range(level, BOARD_SIZE):
+                    rm(new_state[level], constrained_domains[i])
+                constrained_domains[level] = new_state[level]
+
+                # diagonal check
+                for i, lvl in enumerate(range(level + 1, BOARD_SIZE), start=1):
+                    if 0 <= new_state[level] - i:
+                        rm(new_state[level] - i, constrained_domains[lvl])
+                    if new_state[level] + i < BOARD_SIZE:
+                        rm(new_state[level] + i, constrained_domains[lvl])
+                
+                rez = bkt(new_state, constrained_domains, level + 1)
+
+                if rez != False:
+                    return rez
+        return False
+
+    domains = []
+    for i in range(BOARD_SIZE):
+        domains.append(list(range(BOARD_SIZE)))
+    return bkt([], domains, level = 0)
 
 ''' Returns a list of all possible states where we add a queen on the next row '''
 def succesors(state):
