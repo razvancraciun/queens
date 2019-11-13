@@ -14,11 +14,12 @@ def backtracking2():
             if is_valid(succ):
                 states.append(succ)
 
-''' Removes items without failure'''
+''' Removes items without failure '''
 def rm(item, iterable):
     if item in iterable:
         iterable.remove(item)
 
+''' Backtracking with forward checking '''
 def backtracking():
     def bkt(state, domains, level):
         if is_final(state):
@@ -53,7 +54,7 @@ def backtracking():
     domains = []
     for i in range(BOARD_SIZE):
         domains.append(list(range(BOARD_SIZE)))
-    return bkt([], domains, level = 0)
+    return bkt([], domains, 0)
 
 ''' Returns a list of all possible states where we add a queen on the next row '''
 def succesors(state):
