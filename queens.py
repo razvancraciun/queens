@@ -23,6 +23,30 @@ def constrain_vertical(level, new_state, constrained_domains):
         rm(new_state[level], constrained_domains[i])
     constrained_domains[level] = new_state[level]
 
+''' Returns True if no queens are attacking each other, False otherwise '''
+def is_valid(state):
+    # horizontal check is implied by the way the state is stored
+
+    # vertical check
+    for i in range(len(state)):
+        for j in range(i + 1, len(state)):
+            if state[i] == state[j]:
+                return False
+
+    # diagonal check
+    # ╲╱ check
+    for i in range(len(state)):
+        for j in range(i - 1, -1, -1):
+            if state[j] in {state[i] - j + i, state[i] + j - i}:
+                return False
+    # ╱╲ check
+    for i in range(len(state)):
+        for j in range(i + 1, len(state)):
+            if state[j] in {state[i] - j + i, state[i] + j - i}:
+                return False
+
+    return True
+
 ''' Backtracking with forward checking '''
 def bkt(state, domains, level):
     if is_final(state):
@@ -77,48 +101,3 @@ def display(state):
         result[i][state[i]] = colored('⬤', 'white')
 
     print(tabulate(result, headers=range(BOARD_SIZE), showindex='always', tablefmt='fancy_grid'))
-
-# DEPRECATED
-
-''' Returns a list of all possible states where we add a queen on the next row '''
-def succesors(state):
-    result = []
-    for i in reversed(range(BOARD_SIZE)):
-        succ = deepcopy(state)
-        succ.append(i)
-        result.append(succ)
-    return result
-
-''' Returns True if no queens are attacking each other, False otherwise '''
-def is_valid(state):
-    # horizontal check is implied by the way the state is stored
-
-    # vertical check
-    for i in range(len(state)):
-        for j in range(i + 1, len(state)):
-            if state[i] == state[j]:
-                return False
-
-    # diagonal check
-    # ╲╱ check
-    for i in range(len(state)):
-        for j in range(i - 1, -1, -1):
-            if state[j] in {state[i] - j + i, state[i] + j - i}:
-                return False
-    # ╱╲ check
-    for i in range(len(state)):
-        for j in range(i + 1, len(state)):
-            if state[j] in {state[i] - j + i, state[i] + j - i}:
-                return False
-
-    return True
-
-def backtracking2():
-    states = [[]]
-    while states:
-        state = states.pop()
-        if is_final(state):
-            return state
-        for succ in succesors(state):
-            if is_valid(succ):
-                states.append(succ)
