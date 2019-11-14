@@ -4,59 +4,81 @@ from termcolor import colored
 
 BOARD_SIZE = 8
 
-def backtracking2():
-    states = [[]]
-    while states:
-        state = states.pop()
-        if is_final(state):
-            return state
-        for succ in succesors(state):
-            if is_valid(succ):
-                states.append(succ)
-
 ''' Removes items without failure '''
 def rm(item, iterable):
     if item in iterable:
         iterable.remove(item)
 
+''' Applies diagonal constraints on future variable domains '''
+def constrain_diagonal(level, new_state, constrained_domains):
+    for i, lvl in enumerate(range(level + 1, BOARD_SIZE), start=1):
+        if 0 <= new_state[level] - i:
+            rm(new_state[level] - i, constrained_domains[lvl])
+        if new_state[level] + i < BOARD_SIZE:
+            rm(new_state[level] + i, constrained_domains[lvl])
+
+''' Applies vertical constraints on future variable domains '''
+def constrain_vertical(level, new_state, constrained_domains):
+    for i in range(level, BOARD_SIZE):
+        rm(new_state[level], constrained_domains[i])
+    constrained_domains[level] = new_state[level]
+
 ''' Backtracking with forward checking '''
-# TODO this function contains too many functions. consider making a module for this
-def backtracking():
-    def bkt(state, domains, level):
-        if is_final(state):
-            return state
+def bkt(state, domains, level):
+    if is_final(state):
+        return state
 
-        # check among the remaining possible values
-        for succ in domains[level]:
-            new_state = deepcopy(state)
-            new_state.append(succ)
+    # check among the remaining possible values
+    for succ in domains[level]:
+        new_state = deepcopy(state)
+        new_state.append(succ)
 
-            if is_valid(new_state):
-                constrained_domains = deepcopy(domains)
-                constrain_vertical(level, new_state, constrained_domains)
-                constrain_diagonal(level, new_state, constrained_domains)
-                rez = bkt(new_state, constrained_domains, level + 1)
+        if is_valid(new_state):
+            constrained_domains = deepcopy(domains)
+            constrain_vertical(level, new_state, constrained_domains)
+            constrain_diagonal(level, new_state, constrained_domains)
+            rez = bkt(new_state, constrained_domains, level + 1)
 
-                if rez != False:
-                    return rez
+            if rez != False:
+                return rez
+    return False
+
+''' Backtracking helper function '''
+def backtracking(board_size = 8):
+    if board_size < 1:
         return False
 
-    def constrain_diagonal(level, new_state, constrained_domains):
-        for i, lvl in enumerate(range(level + 1, BOARD_SIZE), start=1):
-            if 0 <= new_state[level] - i:
-                rm(new_state[level] - i, constrained_domains[lvl])
-            if new_state[level] + i < BOARD_SIZE:
-                rm(new_state[level] + i, constrained_domains[lvl])
-
-    def constrain_vertical(level, new_state, constrained_domains):
-        for i in range(level, BOARD_SIZE):
-            rm(new_state[level], constrained_domains[i])
-        constrained_domains[level] = new_state[level]
-
+    global BOARD_SIZE
+    BOARD_SIZE = board_size
+    
     domains = []
     for i in range(BOARD_SIZE):
         domains.append(list(range(BOARD_SIZE)))
     return bkt([], domains, 0)
+    
+''' Returns True if each row has a queen, False otherwise '''
+def is_final(state):
+    if len(state) == BOARD_SIZE:
+        return True
+    return False
+
+def display(state):
+    if state == False:
+        print("No solution found.")
+        return
+
+    result = []
+    for i in range(BOARD_SIZE):
+        result.append([])
+        for j in range(BOARD_SIZE):
+            result[i].append('')
+    
+    for i in range(len(state)):
+        result[i][state[i]] = colored('⬤', 'white')
+
+    print(tabulate(result, headers=range(BOARD_SIZE), showindex='always', tablefmt='fancy_grid'))
+
+# DEPRECATED
 
 ''' Returns a list of all possible states where we add a queen on the next row '''
 def succesors(state):
@@ -90,21 +112,13 @@ def is_valid(state):
                 return False
 
     return True
-    
-''' Returns True if each row has a queen, False otherwise '''
-def is_final(state):
-    if len(state) == BOARD_SIZE:
-        return True
-    return False
 
-def display(state):
-    result = []
-    for i in range(BOARD_SIZE):
-        result.append([])
-        for j in range(BOARD_SIZE):
-            result[i].append('')
-    
-    for i in range(len(state)):
-        result[i][state[i]] = colored('⬤', 'white')
-
-    print(tabulate(result, headers=range(BOARD_SIZE), showindex='always', tablefmt='fancy_grid'))
+def backtracking2():
+    states = [[]]
+    while states:
+        state = states.pop()
+        if is_final(state):
+            return state
+        for succ in succesors(state):
+            if is_valid(succ):
+                states.append(succ)
